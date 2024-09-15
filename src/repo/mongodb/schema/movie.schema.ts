@@ -5,14 +5,14 @@ export type MovieDocument = HydratedDocument<Movie>;
 
 @Schema({ collection: 'movies' })
 export class Movie {
-  @Prop()
-  title: string;
+    @Prop()
+    title: string;
 
-  @Prop()
-  year: number;
+    @Prop()
+    year: number;
 
-  @Prop()
-  plot: string;
+    @Prop()
+    plot: string;
 }
 
 export const MovieSchema = SchemaFactory.createForClass(Movie);
