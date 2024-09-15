@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
+import { VersioningType } from '@nestjs/common';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -39,6 +40,12 @@ async function bootstrap() {
         origin: ['http://abc.edward.com'],
         methods: ['GET', 'PUT', 'POST'],
         allowedHeaders: ['Content-Type', 'Authorization'],
+    });
+
+    // Add versioning on header
+    app.enableVersioning({
+        type: VersioningType.HEADER,
+        header: 'AppVersion',
     });
 
     await app.listen(3000);
