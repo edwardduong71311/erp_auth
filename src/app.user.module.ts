@@ -4,10 +4,12 @@ import { IUserRepo } from './domain/repo/user.repo';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { UserMongoRepo } from './repo/mongodb/impl/user.mongo.repo';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Movie, MovieSchema } from './repo/mongodb/schema/movie.schema';
 import { DefaultUserService } from './domain/service/impl/user.service.default';
 import { IUserService } from './domain/service/user.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import { User, UserSchema } from './repo/mongodb/schema/user.schema';
+import { Role, RoleSchema } from './repo/mongodb/schema/role.schema';
+import { Token, TokenSchema } from './repo/mongodb/schema/token.schema';
 
 @Module({
     imports: [
@@ -17,7 +19,11 @@ import { IUserService } from './domain/service/user.service';
                 limit: 10,
             },
         ]),
-        MongooseModule.forFeature([{ name: Movie.name, schema: MovieSchema }]),
+        MongooseModule.forFeature([
+            { name: User.name, schema: UserSchema },
+            { name: Role.name, schema: RoleSchema },
+            { name: Token.name, schema: TokenSchema },
+        ]),
     ],
     controllers: [UserController],
     providers: [
