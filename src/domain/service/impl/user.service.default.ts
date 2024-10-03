@@ -1,34 +1,73 @@
-import {
-    BadRequestException,
-    Inject,
-    Injectable,
-    NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { IUserRepo } from '../../repo/user.repo';
 import { IUserService } from '../user.service';
-import { IUserModel } from 'src/domain/model/user.model';
+import { ILoginModel, IUserModel } from 'src/domain/model/user.model';
 import {
     comparePassword,
     hashPassword,
 } from 'src/domain/utility/password.helper';
 import * as crypto from 'node:crypto';
+import { JwtService } from '@nestjs/jwt';
+import { IRequestInfo, ITokenModel } from 'src/domain/model/token.model';
+import { ITokenRepo } from 'src/domain/repo/token.repo';
 
 @Injectable()
 export class DefaultUserService implements IUserService {
-    constructor(@Inject(IUserRepo) private readonly userRepo: IUserRepo) {}
+    constructor(
+        @Inject(IUserRepo) private readonly userRepo: IUserRepo,
+        @Inject(ITokenRepo) private readonly tokenRepo: ITokenRepo,
+        private jwtService: JwtService,
+    ) {}
 
-    async login(user: IUserModel): Promise<IUserModel> {
+    async getTokenByEmail(email: string): Promise<ITokenModel> {
+        return await this.tokenRepo.getTokenByEmail(email);
+    }
+
+    async login(
+        user: IUserModel,
+        requestInfo: IRequestInfo,
+    ): Promise<ILoginModel> {
         if (!user || !user.email || !user.password)
-            throw new BadRequestException('User not found');
+            throw new UnauthorizedException('User not found');
 
         const savedUser = await this.userRepo.getUserByEmail(user.email);
         if (
             !savedUser ||
             !(await comparePassword(user.password, savedUser.password))
         )
-            throw new NotFoundException('User not found');
+            throw new UnauthorizedException('User not found');
 
-        return this.genDefaultUserModel(savedUser);
+        let token = await this.getTokenByEmail(user.email);
+        // TODO: Verify token and Refresh if possible
+        if (!token) {
+            token = await this.createToken(savedUser, requestInfo);
+            this.tokenRepo.saveToken(token);
+        }
+
+        return {
+            email: savedUser.email,
+            name: savedUser.name,
+            token: token,
+        };
+    }
+
+    async createToken(
+        user: IUserModel,
+        requestInfo: IRequestInfo,
+    ): Promise<ITokenModel> {
+        const payload = { email: user.email, createDt: Date.now() };
+        const access_token = await this.jwtService.signAsync(payload, {
+            expiresIn: '1h',
+        });
+        return {
+            email: payload.email,
+            token: access_token,
+            createDt: payload.createDt,
+            info: {
+                host: requestInfo.host,
+                device: requestInfo.device,
+            },
+        };
     }
 
     async initAdmin(): Promise<boolean> {
@@ -53,18 +92,9 @@ export class DefaultUserService implements IUserService {
 
     genDefaultUserModel(param: any): IUserModel {
         const result: IUserModel = {
-            name: '',
-            email: '',
+            name: param?.name || '',
+            email: param?.email || '',
         };
-        if (!param) return result;
-
-        if (param.name) {
-            result.name = param.name;
-        }
-        if (param.email) {
-            result.email = param.email;
-        }
-
         return result;
     }
 }
