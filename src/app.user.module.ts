@@ -10,9 +10,14 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './repo/mongodb/schema/user.schema';
 import { Role, RoleSchema } from './repo/mongodb/schema/role.schema';
 import { Token, TokenSchema } from './repo/mongodb/schema/token.schema';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
+import { ITokenRepo } from './domain/repo/token.repo';
+import { TokenMongoRepo } from './repo/mongodb/impl/token.mongo.repo';
 
 @Module({
     imports: [
+        ConfigModule.forRoot(),
         ThrottlerModule.forRoot([
             {
                 ttl: 60000,
@@ -24,6 +29,10 @@ import { Token, TokenSchema } from './repo/mongodb/schema/token.schema';
             { name: Role.name, schema: RoleSchema },
             { name: Token.name, schema: TokenSchema },
         ]),
+        JwtModule.register({
+            global: true,
+            secret: process.env.AUTH_JWT_CONSTANT,
+        }),
     ],
     controllers: [UserController],
     providers: [
@@ -34,6 +43,10 @@ import { Token, TokenSchema } from './repo/mongodb/schema/token.schema';
         {
             provide: IUserRepo,
             useClass: UserMongoRepo,
+        },
+        {
+            provide: ITokenRepo,
+            useClass: TokenMongoRepo,
         },
         {
             provide: APP_GUARD,

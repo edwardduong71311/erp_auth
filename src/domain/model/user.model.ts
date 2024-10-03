@@ -1,3 +1,11 @@
+import { ITokenModel } from './token.model';
+
+export interface ILoginModel {
+    name: string;
+    email: string;
+    token: ITokenModel;
+}
+
 export interface IUserModel {
     name?: string;
     email: string;

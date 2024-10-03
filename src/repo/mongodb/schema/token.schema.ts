@@ -18,10 +18,7 @@ export class Token {
     token: string;
 
     @Prop()
-    userId: string;
-
-    @Prop()
-    expiration: number;
+    email: string;
 
     @Prop()
     createDt: number;

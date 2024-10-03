@@ -1,12 +1,11 @@
 export interface ITokenModel {
     token: string;
-    userId: string;
-    expiration: number;
+    email: string;
     createDt: number;
-    info: ITokenInfoModel;
+    info?: IRequestInfo;
 }
 
-export interface ITokenInfoModel {
+export interface IRequestInfo {
     host?: string;
     device?: string;
 }
