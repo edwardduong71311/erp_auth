@@ -11,7 +11,7 @@ export class TokenMongoRepo implements ITokenRepo {
 
     async revokeToken(email: string): Promise<boolean> {
         try {
-            await this.tokenCollection.deleteOne({ email: email });
+            await this.tokenCollection.deleteMany({ email: email });
             return true;
         } catch (e) {
             return false;
