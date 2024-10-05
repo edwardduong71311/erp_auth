@@ -45,5 +45,6 @@ import {
             useClass: ThrottlerGuard,
         },
     ],
+    exports: [IUserService],
 })
 export class UserModule {}
