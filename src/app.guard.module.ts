@@ -1,17 +1,17 @@
 import { Module } from '@nestjs/common';
-import { UserController } from './controller/user.controller';
-import { IUserRepo } from './domain/repo/user.repo';
-import { ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { UserMongoRepo } from './repo/mongodb/impl/user.mongo.repo';
+import { AuthGuard } from './controller/guard/auth.guard';
 import { DefaultUserService } from './domain/service/impl/user.service.default';
 import { IUserService } from './domain/service/user.service';
+import { ITokenRepo } from './domain/repo/token.repo';
+import { IUserRepo } from './domain/repo/user.repo';
+import { TokenMongoRepo } from './repo/mongodb/impl/token.mongo.repo';
+import { UserMongoRepo } from './repo/mongodb/impl/user.mongo.repo';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './repo/mongodb/schema/user.schema';
 import { Role, RoleSchema } from './repo/mongodb/schema/role.schema';
 import { Token, TokenSchema } from './repo/mongodb/schema/token.schema';
-import { ITokenRepo } from './domain/repo/token.repo';
-import { TokenMongoRepo } from './repo/mongodb/impl/token.mongo.repo';
+import { User, UserSchema } from './repo/mongodb/schema/user.schema';
+import { RolesGuard } from './controller/guard/roles.guard';
 import {
     UserRole,
     UserRoleSchema,
@@ -26,7 +26,6 @@ import {
             { name: UserRole.name, schema: UserRoleSchema },
         ]),
     ],
-    controllers: [UserController],
     providers: [
         {
             provide: IUserService,
@@ -42,8 +41,12 @@ import {
         },
         {
             provide: APP_GUARD,
-            useClass: ThrottlerGuard,
+            useClass: AuthGuard,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: RolesGuard,
         },
     ],
 })
-export class UserModule {}
+export class GuardModule {}
