@@ -37,7 +37,7 @@ async function bootstrap() {
 
     // Setup CORS
     app.enableCors({
-        origin: ['http://abc.edward.com'],
+        origin: ['http://localhost:3001'],
         methods: ['GET', 'PUT', 'POST'],
         allowedHeaders: ['Content-Type', 'Authorization'],
     });
